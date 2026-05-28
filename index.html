@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>トータル配当利回り計算アプリ</title>
+
+  <style>
+
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    .card {
+      background-color: #1e1e1e;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      margin-bottom: 20px;
+    }
+
+    input {
+      background-color: #2a2a2a;
+      color: white;
+      border: 1px solid #555;
+      padding: 8px;
+      border-radius: 8px;
+      width: 200px;
+    }
+
+    button {
+      background-color: #333;
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-right: 10px;
+    }
+
+    button:hover {
+      background-color: #555;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    li {
+      margin-bottom: 10px;
+    }
+
+    #yieldCard {
+  background: linear-gradient(
+    135deg,
+    #2c2c2c,
+    #1a1a1a
+  );
+
+  padding: 30px;
+
+  border-radius: 20px;
+
+  text-align: center;
+
+  margin-top: 20px;
+
+  box-shadow:
+    0 6px 20px rgba(0,0,0,0.5);
+}
+
+.yieldLabel {
+  font-size: 18px;
+  color: #bbbbbb;
+  margin-bottom: 10px;
+}
+
+#yieldResult {
+  font-size: 48px;
+  font-weight: bold;
+  color: #4ade80;
+  margin: 0;
+}
+
+  </style>
+
+
+</head>
+<body>
+
+  <div class="card">
+
+    <h1>トータル配当利回り計算アプリ</h1>
+
+    <p>銘柄名</p>
+    <input id="name" type="text">
+
+    <p>株価</p>
+    <input id="price" type="number">
+
+    <p>株数</p>
+    <input id="shares" type="number" step="100">
+
+    <p>1株配当</p>
+    <input id="dividend" type="number">
+
+    <p>年間優待額</p>
+    <input id="benefit" type="number">
+
+    <br><br>
+
+    <button onclick="addStock()">
+      銘柄追加
+    </button>
+
+    <button onclick="restoreStock()">
+      削除を取り消す
+    </button>
+
+  </div>
+
+  <div class="card">
+
+    <h2>追加済み銘柄</h2>
+
+    <ul id="stockList"></ul>
+
+  </div>
+
+  <div class="card">
+
+    <h2>合計結果</h2>
+
+    <p id="investmentResult"></p>
+    <p id="dividendResult"></p>
+    <p id="benefitResult"></p>
+    <p id="incomeResult"></p>
+    <div id="yieldCard">
+
+      <p class="yieldLabel">
+        トータル利回り
+      </p>
+    
+      <p id="yieldResult"></p>
+    
+    </div>
+
+  </div>
+
+  <script>
+
+    // 銘柄データ保存用
+    let stocks = [];
+
+    // 最後に削除した銘柄
+    let lastDeletedStock = null;
+
+    // ページ読み込み時
+    window.onload = function() {
+
+      const savedStocks =
+        localStorage.getItem("stocks");
+
+      if (savedStocks !== null) {
+
+        stocks =
+          JSON.parse(savedStocks);
+
+        updateDisplay();
+      }
+    }
+
+    // 保存処理
+    function saveData() {
+
+      localStorage.setItem(
+        "stocks",
+        JSON.stringify(stocks)
+      );
+    }
+
+    // 銘柄追加
+    function addStock() {
+
+      const name =
+        document.getElementById("name").value;
+
+      const price =
+        Number(document.getElementById("price").value);
+
+      const shares =
+        Number(document.getElementById("shares").value);
+
+      const dividend =
+        Number(document.getElementById("dividend").value);
+
+      const benefit =
+        Number(document.getElementById("benefit").value);
+
+      // 投資額
+      const investment =
+        price * shares;
+
+      // 年間配当
+      const yearlyDividend =
+        dividend * shares;
+
+      // 配列へ追加
+      stocks.push({
+        name: name,
+        investment: investment,
+        yearlyDividend: yearlyDividend,
+        benefit: benefit,
+        shares: shares
+      });
+
+      // 表示更新
+      updateDisplay();
+
+      // 保存
+      saveData();
+
+      // 入力欄クリア
+      document.getElementById("name").value = "";
+      document.getElementById("price").value = "";
+      document.getElementById("shares").value = "";
+      document.getElementById("dividend").value = "";
+      document.getElementById("benefit").value = "";
+    }
+
+    // 銘柄削除
+    function deleteStock(index) {
+
+      // 削除データ保存
+      lastDeletedStock =
+        stocks[index];
+
+      // 銘柄削除
+      stocks.splice(index, 1);
+
+      // 再表示
+      updateDisplay();
+
+      // 保存
+      saveData();
+    }
+
+    // 削除取り消し
+    function restoreStock() {
+
+      if (lastDeletedStock !== null) {
+
+        // 配列へ戻す
+        stocks.push(lastDeletedStock);
+
+        // 再表示
+        updateDisplay();
+
+        // 保存
+        saveData();
+
+        // 初期化
+        lastDeletedStock = null;
+      }
+    }
+
+    // 表示更新
+    function updateDisplay() {
+
+      let totalInvestment = 0;
+      let totalDividend = 0;
+      let totalBenefit = 0;
+
+      // 一覧表示エリア
+      const stockList =
+        document.getElementById("stockList");
+
+      stockList.innerHTML = "";
+
+      // 配列ループ
+      for (let i = 0; i < stocks.length; i++) {
+
+        const stock = stocks[i];
+
+        // 合計加算
+        totalInvestment += stock.investment;
+        totalDividend += stock.yearlyDividend;
+        totalBenefit += stock.benefit;
+
+        // li作成
+        const li =
+          document.createElement("li");
+
+        li.innerHTML =
+          stock.name +
+          " " +
+          stock.shares +
+          "株 " +
+          "<button onclick='deleteStock(" + i + ")'>削除</button>";
+
+        stockList.appendChild(li);
+      }
+
+      // 総合年間収入
+      const totalIncome =
+        totalDividend + totalBenefit;
+
+      // 総合利回り
+      const totalYield =
+        (totalIncome / totalInvestment) * 100;
+
+      // 表示
+      document.getElementById("investmentResult").innerText =
+        "合計投資額: " +
+        totalInvestment.toLocaleString() +
+        "円";
+
+      document.getElementById("dividendResult").innerText =
+        "年間配当総額: " +
+        totalDividend.toLocaleString() +
+        "円";
+
+      document.getElementById("benefitResult").innerText =
+        "年間優待総額: " +
+        totalBenefit.toLocaleString() +
+        "円";
+
+      document.getElementById("incomeResult").innerText =
+        "総合年間収入: " +
+        totalIncome.toLocaleString() +
+        "円";
+
+      document.getElementById("yieldResult").innerText =
+        "トータル利回り: " +
+        totalYield.toFixed(2) +
+        "%";
+    }
+
+  </script>
+
+</body>
+</html>
