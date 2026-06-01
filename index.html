@@ -157,6 +157,8 @@
     // 最後に削除した銘柄
     let lastDeletedStock = null;
 
+    let editingIndex = -1;
+
     // ページ読み込み時
     window.onload = function() {
 
@@ -208,13 +210,28 @@
         dividend * shares;
 
       // 配列へ追加
-      stocks.push({
-        name: name,
-        investment: investment,
-        yearlyDividend: yearlyDividend,
-        benefit: benefit,
-        shares: shares
-      });
+      if (editingIndex >= 0) {
+
+stocks[editingIndex] = {
+  name,
+  investment,
+  yearlyDividend,
+  benefit,
+  shares
+};
+
+editingIndex = -1;
+
+} else {
+
+stocks.push({
+  name,
+  investment,
+  yearlyDividend,
+  benefit,
+  shares
+});
+}
 
       // 表示更新
       updateDisplay();
@@ -229,6 +246,37 @@
       document.getElementById("dividend").value = "";
       document.getElementById("benefit").value = "";
     }
+
+    function editStock(index) {
+
+const stock = stocks[index];
+
+document.getElementById("name").value =
+  stock.name;
+
+document.getElementById("shares").value =
+  stock.shares;
+
+document.getElementById("benefit").value =
+  stock.benefit;
+
+// 逆算
+const price =
+  stock.investment /
+  stock.shares;
+
+const dividend =
+  stock.yearlyDividend /
+  stock.shares;
+
+document.getElementById("price").value =
+  price;
+
+document.getElementById("dividend").value =
+  dividend;
+
+editingIndex = index;
+}
 
     // 銘柄削除
     function deleteStock(index) {
@@ -293,12 +341,15 @@
         const li =
           document.createElement("li");
 
-        li.innerHTML =
-          stock.name +
-          " " +
-          stock.shares +
-          "株 " +
-          "<button onclick='deleteStock(" + i + ")'>削除</button>";
+          li.innerHTML =
+  stock.name +
+  " " +
+  stock.shares +
+  "株 " +
+
+  "<button onclick='editStock(" + i + ")'>修正</button> " +
+
+  "<button onclick='deleteStock(" + i + ")'>削除</button>";
 
         stockList.appendChild(li);
       }
