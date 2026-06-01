@@ -49,8 +49,14 @@
     }
 
     li {
-      margin-bottom: 10px;
-    }
+  background-color: #2a2a2a;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  list-style: none;
+
+  border: 1px solid #3a3a3a;
+}
 
     #yieldCard {
   background: linear-gradient(
@@ -341,11 +347,49 @@ editingIndex = index;
         const li =
           document.createElement("li");
 
-          li.innerHTML =
+          const dividendYield =
+  (stock.yearlyDividend /
+   stock.investment) * 100;
+
+const benefitYield =
+  (stock.benefit /
+   stock.investment) * 100;
+
+const totalYield =
+  dividendYield +
+  benefitYield;
+
+const totalIncome =
+  stock.yearlyDividend +
+  stock.benefit;
+
+li.innerHTML =
+
+  "<b>" +
   stock.name +
   " " +
   stock.shares +
-  "株 " +
+  "株</b><br><br>" +
+
+  "配当利回り: " +
+  dividendYield.toFixed(2) +
+  "%<br>" +
+
+  "優待利回り: " +
+  benefitYield.toFixed(2) +
+  "%<br>" +
+
+  "総合利回り: " +
+  totalYield.toFixed(2) +
+  "%<br><br>" +
+
+  "年間配当: " +
+  stock.yearlyDividend.toLocaleString() +
+  "円<br>" +
+
+  "年間総額(優待込み): " +
+  totalIncome.toLocaleString() +
+  "円<br><br>" +
 
   "<button onclick='editStock(" + i + ")'>修正</button> " +
 
