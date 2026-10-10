@@ -83,6 +83,8 @@
   margin-bottom: 10px;
 }
 
+
+#dividendYieldResult,
 #yieldResult {
   font-size: 48px;
   font-weight: bold;
@@ -145,13 +147,19 @@
     <p id="incomeResult"></p>
     <div id="yieldCard">
 
-      <p class="yieldLabel">
-        トータル利回り
-      </p>
-    
-      <p id="yieldResult"></p>
-    
-    </div>
+  <p class="yieldLabel">
+    配当利回り（優待なし）
+  </p>
+
+  <p id="dividendYieldResult"></p>
+
+  <p class="yieldLabel">
+    トータル利回り（優待込み）
+  </p>
+
+  <p id="yieldResult"></p>
+
+</div>
 
   </div>
 
@@ -427,10 +435,17 @@ li.innerHTML =
         totalIncome.toLocaleString() +
         "円";
 
-      document.getElementById("yieldResult").innerText =
-        "トータル利回り: " +
-        totalYield.toFixed(2) +
-        "%";
+      // 配当利回り（優待なし）
+const dividendYield =
+  (totalDividend / totalInvestment) * 100;
+
+// 配当利回りを表示
+document.getElementById("dividendYieldResult").innerText =
+  dividendYield.toFixed(2) + "%";
+
+// トータル利回り（優待込み）を表示
+document.getElementById("yieldResult").innerText =
+  totalYield.toFixed(2) + "%";
     }
 
   </script>
